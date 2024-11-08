@@ -23,7 +23,5 @@ func LoadConfig() {
 	err = viper.ReadInConfig()
 	if err != nil {
 		fmt.Println("Error reading config file:", err)
-	} else {
-		fmt.Println("Config file loaded successfully", viper.ConfigFileUsed())
 	}
 }
