@@ -18,9 +18,11 @@ func Connect() (*discordgo.Session, error) {
 		return nil, fmt.Errorf("error creating discord session: %v", err)
 	}
 
+	dg.Identify.Intents = discordgo.IntentsAll
+	dg.Identify.Intents = discordgo.IntentsDirectMessages
+
 	dg.Token = token
 	dg.Identify.Token = token
-
 	dg.StateEnabled = false
 	dg.Identify.Compress = false
 	dg.Identify.LargeThreshold = 0
