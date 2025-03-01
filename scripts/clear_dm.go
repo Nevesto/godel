@@ -1,3 +1,5 @@
+// read this: follow my friend <3: https://www.instagram.com/_jarxdd/
+
 package scripts
 
 import (
@@ -17,50 +19,58 @@ func ClearDM(session *discordgo.Session, userID string) error {
 	var beforeID string
 
 	for {
-		messages, err := session.ChannelMessages(channel.ID, 30, beforeID, "", "")
+		messages, err := session.ChannelMessages(channel.ID, 35, beforeID, "", "")
 		if err != nil {
-			return fmt.Errorf("error when fetching messages: %w", err)
+			return fmt.Errorf("error fetching messages: %w", err)
 		}
+
+		// Pre-count user messages
+		var userMessages []*discordgo.Message
+		for _, msg := range messages {
+			if msg.Author.ID == session.State.User.ID {
+				userMessages = append(userMessages, msg)
+			}
+		}
+		fmt.Printf("Potential messages to delete: %d (from %d fetched)\n", len(userMessages), len(messages)) // lots of messages to delete, value is not accurate
 
 		if len(messages) == 0 {
-			fmt.Println("No messages to delete")
+			fmt.Println("No messages found in this batch")
 			break
 		}
 
-		if len(messages) < 30 { // Last batch of messages, don't need to fetch again
-			for _, message := range messages {
-				if message.Author.ID == session.State.User.ID {
-					if err := session.ChannelMessageDelete(channel.ID, message.ID); err != nil {
-						return fmt.Errorf("can't delete message: %w", err)
-					}
-					fmt.Printf("Deleted message: %s\n", message.Content)
-					totalDeleted++
-
-					time.Sleep(1 * time.Second) // Avoid rate limiting
-				}
+		currentBatchDeleted := 0
+		for _, message := range userMessages {
+			if err := session.ChannelMessageDelete(channel.ID, message.ID); err != nil {
+				return fmt.Errorf("can't delete message: %w", err)
 			}
 
+			// Handle empty message content
+			content := message.Content
+			if content == "" {
+				content = "[empty content]"
+			}
+			fmt.Printf("Deleted message: %.40s\n", content)
+
+			currentBatchDeleted++
+			totalDeleted++
+			time.Sleep(1 * time.Second)
+		}
+
+		// Update beforeID after processing entire batch
+		if len(messages) > 0 {
+			beforeID = messages[len(messages)-1].ID
+		}
+
+		if len(messages) < 35 {
+			fmt.Printf("Reached final batch (%d messages)\n", len(messages))
 			break
 		}
 
-		for _, message := range messages {
-			if message.Author.ID == session.State.User.ID {
-				if err := session.ChannelMessageDelete(channel.ID, message.ID); err != nil {
-					return fmt.Errorf("can't delete message: %w", err)
-				}
-				fmt.Printf("Deleted message: %s\n", message.Content)
-				totalDeleted++
-
-				time.Sleep(1 * time.Second) // Avoid rate limiting
-			}
-		}
-
-		fmt.Println("Waiting 15 seconds before fetching next batch of messages...")
+		fmt.Printf("Deleted %d messages in this batch\n", currentBatchDeleted)
+		fmt.Println("Waiting 15 seconds before next batch...")
 		time.Sleep(15 * time.Second)
-
-		beforeID = messages[len(messages)-1].ID
 	}
 
-	fmt.Printf("Deleted %d messages\n", totalDeleted)
+	fmt.Printf("\nTotal messages deleted: %d\n", totalDeleted)
 	return nil
 }
