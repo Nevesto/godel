@@ -1,5 +1,3 @@
-// read this: follow my friend <3: https://www.instagram.com/_jarxdd/
-
 package scripts
 
 import (
@@ -7,12 +5,13 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/fatih/color"
 )
 
 func ClearDM(session *discordgo.Session, userID string) error {
 	channel, err := session.UserChannelCreate(userID)
 	if err != nil {
-		return fmt.Errorf("can't create dm: %w", err)
+		return fmt.Errorf("%s", color.RedString(fmt.Sprintf("can't create dm: %v", err)))
 	}
 
 	totalDeleted := 0
@@ -31,17 +30,17 @@ func ClearDM(session *discordgo.Session, userID string) error {
 				userMessages = append(userMessages, msg)
 			}
 		}
-		fmt.Printf("Potential messages to delete: %d (from %d fetched)\n", len(userMessages), len(messages)) // lots of messages to delete, value is not accurate
+		color.Green("Potential messages to delete: %d (from %d fetched)", len(userMessages), len(messages))
 
 		if len(messages) == 0 {
-			fmt.Println("No messages found in this batch")
+			color.Yellow("No messages found in this batch")
 			break
 		}
 
 		currentBatchDeleted := 0
 		for _, message := range userMessages {
 			if err := session.ChannelMessageDelete(channel.ID, message.ID); err != nil {
-				return fmt.Errorf("can't delete message: %w", err)
+				return fmt.Errorf("%s", color.RedString(fmt.Sprintf("can't delete message: %v", err)))
 			}
 
 			// Handle empty message content
@@ -49,7 +48,7 @@ func ClearDM(session *discordgo.Session, userID string) error {
 			if content == "" {
 				content = "[empty content]"
 			}
-			fmt.Printf("Deleted message: %.40s\n", content)
+			color.Green("Deleted message: %.40s", content)
 
 			currentBatchDeleted++
 			totalDeleted++
@@ -62,15 +61,15 @@ func ClearDM(session *discordgo.Session, userID string) error {
 		}
 
 		if len(messages) < 35 {
-			fmt.Printf("Reached final batch (%d messages)\n", len(messages))
+			color.Green("Reached final batch (%d messages)", len(messages))
 			break
 		}
 
-		fmt.Printf("Deleted %d messages in this batch\n", currentBatchDeleted)
-		fmt.Println("Waiting 15 seconds before next batch...")
+		color.Green("Deleted %d messages in this batch", currentBatchDeleted)
+		color.Yellow("Waiting 15 seconds before next batch...")
 		time.Sleep(15 * time.Second)
 	}
 
-	fmt.Printf("\nTotal messages deleted: %d\n", totalDeleted)
+	color.Green("\nTotal messages deleted: %d", totalDeleted)
 	return nil
 }

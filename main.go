@@ -1,13 +1,16 @@
+// read this: follow my friend <3: https://www.instagram.com/_jarxdd/
+
 package main
 
 import (
 	"fmt"
 
 	"github.com/Nevesto/godel/cmd"
+	"github.com/fatih/color"
 )
 
 func main() {
-	fmt.Println(`
+	fmt.Println(color.GreenString(`
                            /$$           /$$
                           | $$          | $$
   /$$$$$$   /$$$$$$   /$$$$$$$  /$$$$$$ | $$
@@ -18,8 +21,7 @@ func main() {
  \____  $$ \______/  \_______/ \_______/|__/
  /$$  \ $$
 |  $$$$$$/
- \______/
- 
- `)
+ \______/ 
+ `))
 	cmd.Execute()
 }

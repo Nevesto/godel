@@ -5,11 +5,13 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/fatih/color"
 )
 
 func ClearGuild(session *discordgo.Session, guildID string) error {
 	channels, err := session.GuildChannels(guildID)
 	if err != nil {
+		color.Red("Error getting guild channels: %v", err)
 		return fmt.Errorf("failed to get guild channels: %w", err)
 	}
 
@@ -18,10 +20,11 @@ func ClearGuild(session *discordgo.Session, guildID string) error {
 			continue
 		}
 
-		fmt.Println("Clearing channel: ", channel.Name)
+		color.Green("Clearing channel: %s", channel.Name)
 
 		err := ClearChannel(session, channel.ID)
 		if err != nil {
+			color.Red("Error clearing channel %s: %v", channel.Name, err)
 			return fmt.Errorf("channel cleanup failed: %w", err)
 		}
 

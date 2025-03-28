@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/fatih/color"
 )
 
 func ClearChannel(session *discordgo.Session, channelId string) error {
@@ -14,7 +15,7 @@ func ClearChannel(session *discordgo.Session, channelId string) error {
 	for {
 		messages, err := session.ChannelMessages(channelId, 35, beforeID, "", "")
 		if err != nil {
-			return err
+			return fmt.Errorf(color.RedString("Failed to fetch messages: %w"), err)
 		}
 
 		userMessageCount := 0
@@ -23,10 +24,10 @@ func ClearChannel(session *discordgo.Session, channelId string) error {
 				userMessageCount++
 			}
 		}
-		fmt.Println("Messages to delete: ", userMessageCount)
+		fmt.Println(color.YellowString("Messages to delete: %d"), userMessageCount)
 
 		if len(messages) == 0 {
-			fmt.Println("No messages to delete")
+			fmt.Println(color.GreenString("No messages to delete"))
 			break
 		}
 
@@ -35,10 +36,10 @@ func ClearChannel(session *discordgo.Session, channelId string) error {
 			if message.Author.ID == session.State.User.ID {
 				err := session.ChannelMessageDelete(channelId, message.ID)
 				if err != nil {
-					return fmt.Errorf("\ncan't delete message: %w", err)
+					return fmt.Errorf(color.RedString("Can't delete message: %w"), err)
 				}
 
-				fmt.Printf("Deleted message: %s\n", message.Content)
+				fmt.Printf(color.RedString("Deleted message: %s\n"), message.Content)
 				totalDeleted++
 				currentBatchDeleted++
 				time.Sleep(1 * time.Second)
@@ -50,18 +51,18 @@ func ClearChannel(session *discordgo.Session, channelId string) error {
 		}
 
 		if len(messages) < 35 {
-			fmt.Printf("Reached final batch (%d messages)\n", len(messages))
+			fmt.Println(color.GreenString("Reached final batch (%d messages)"), len(messages))
 			break
 		}
 
-		fmt.Printf("Deleted %d/%d user messages in this batch\n",
+		fmt.Printf(color.GreenString("Deleted %d/%d user messages in this batch\n"),
 			currentBatchDeleted,
 			userMessageCount,
 		)
-		fmt.Println("Waiting 15 seconds before fetching next batch of messages...")
+		fmt.Println(color.YellowString("Waiting 15 seconds before fetching next batch of messages..."))
 		time.Sleep(15 * time.Second)
 	}
 
-	fmt.Printf("\nTotal messages deleted: %d\n", totalDeleted)
+	fmt.Printf(color.GreenString("Total messages deleted: %d\n"), totalDeleted)
 	return nil
 }
