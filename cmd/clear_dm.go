@@ -24,7 +24,7 @@ var clearDm = &cobra.Command{
 
 		defer session.Close()
 
-		err = scripts.ClearDM(session, channelId)
+		err = scripts.ClearDM(session, channelId, false)
 		if err != nil {
 			cmd.Println("Failed to clear DM:", err)
 		}

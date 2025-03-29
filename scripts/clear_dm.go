@@ -8,22 +8,34 @@ import (
 	"github.com/fatih/color"
 )
 
-func ClearDM(session *discordgo.Session, userID string) error {
-	channel, err := session.UserChannelCreate(userID)
-	if err != nil {
-		return fmt.Errorf("%s", color.RedString(fmt.Sprintf("can't create dm: %v", err)))
+func ClearDM(session *discordgo.Session, id string, isChannel bool) error {
+	var channelID string
+
+	if isChannel {
+		// Assume the ID is already a valid channel ID
+		channelID = id
+	} else {
+		// Attempt to fetch the channel. If it exists, use it.
+		channel, err := session.Channel(id)
+		if err != nil {
+			// If not found, try to create a DM channel assuming the ID is a user ID.
+			channel, err = session.UserChannelCreate(id)
+			if err != nil {
+				return fmt.Errorf("%s", color.RedString(fmt.Sprintf("can't create dm: %v", err)))
+			}
+		}
+		channelID = channel.ID
 	}
 
 	totalDeleted := 0
 	var beforeID string
 
 	for {
-		messages, err := session.ChannelMessages(channel.ID, 35, beforeID, "", "")
+		messages, err := session.ChannelMessages(channelID, 35, beforeID, "", "")
 		if err != nil {
 			return fmt.Errorf("error fetching messages: %w", err)
 		}
 
-		// Pre-count user messages
 		var userMessages []*discordgo.Message
 		for _, msg := range messages {
 			if msg.Author.ID == session.State.User.ID {
@@ -39,11 +51,10 @@ func ClearDM(session *discordgo.Session, userID string) error {
 
 		currentBatchDeleted := 0
 		for _, message := range userMessages {
-			if err := session.ChannelMessageDelete(channel.ID, message.ID); err != nil {
+			if err := session.ChannelMessageDelete(channelID, message.ID); err != nil {
 				return fmt.Errorf("%s", color.RedString(fmt.Sprintf("can't delete message: %v", err)))
 			}
 
-			// Handle empty message content
 			content := message.Content
 			if content == "" {
 				content = "[empty content]"
@@ -55,7 +66,6 @@ func ClearDM(session *discordgo.Session, userID string) error {
 			time.Sleep(1 * time.Second)
 		}
 
-		// Update beforeID after processing entire batch
 		if len(messages) > 0 {
 			beforeID = messages[len(messages)-1].ID
 		}

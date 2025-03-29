@@ -38,7 +38,7 @@ func ClearAllDms(session *discordgo.Session) error {
 
 	for _, channel := range privateChannels {
 		fmt.Println(color.GreenString(fmt.Sprintf("Clearing DM with users: %s", channel.Recipients[0].Username)))
-		err := ClearDM(session, channel.Recipients[0].ID)
+		err := ClearDM(session, channel.ID, true)
 
 		if err != nil {
 			fmt.Println(color.RedString(fmt.Sprintf("Failed to clear DM with user %s: %v", channel.Recipients[0].Username, err)))
