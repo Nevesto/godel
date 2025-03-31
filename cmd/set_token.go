@@ -6,12 +6,13 @@ import (
 )
 
 var setTokenCmd = &cobra.Command{
-	Use:   "set-token [token]",
-	Short: "Sets and saves your Discord account token",
-	Args:  cobra.ExactArgs(1),
+	Use:   "set-token [name] [token]",
+	Short: "Register and save a Discord token with an identifier name",
+	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		token := args[0]
-		auth.SaveToken(token)
+		tokenName := args[0]
+		token := args[1]
+		auth.SaveToken(tokenName, token)
 	},
 }
 

@@ -8,10 +8,12 @@ import (
 	"github.com/spf13/viper"
 )
 
-func SaveToken(newToken string) {
+// SaveToken salva (ou atualiza) um token identificado por um nome (alias).
+// Se não houver token ativo, define o token salvo como ativo.
+func SaveToken(tokenName, newToken string) {
 	configDir, err := os.UserConfigDir()
 	if err != nil {
-		fmt.Println("Error determining config directory:", err)
+		fmt.Println("Erro ao determinar o diretório de configuração:", err)
 		return
 	}
 
@@ -19,7 +21,7 @@ func SaveToken(newToken string) {
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		err = os.Mkdir(configPath, os.ModePerm)
 		if err != nil {
-			fmt.Println("Error creating config directory:", err)
+			fmt.Println("Erro ao criar diretório de configuração:", err)
 			return
 		}
 	}
@@ -30,28 +32,45 @@ func SaveToken(newToken string) {
 
 	configFilePath := filepath.Join(configPath, "config.json")
 	err = viper.ReadInConfig()
-	if err == nil {
-		currentToken := viper.GetString("discord_token")
-		if currentToken == newToken {
-			fmt.Println("Token is already saved.")
-			return
-		}
+	if err != nil {
+		// Não existe arquivo de configuração ainda
+		fmt.Println("Nenhuma configuração existente encontrada, criando uma nova.")
 	}
 
-	viper.Set("discord_token", newToken)
+	// Recupera o mapa de tokens salvos (caso exista)
+	tokens := viper.GetStringMapString("tokens")
+	if tokens == nil {
+		tokens = make(map[string]string)
+	}
 
+	// Se o token com o mesmo nome já existir e for idêntico, não há necessidade de atualizá-lo.
+	if current, exists := tokens[tokenName]; exists && current == newToken {
+		fmt.Println("Token já está registrado com esse nome e valor.")
+		return
+	}
+
+	// Atualiza ou adiciona o token no mapa
+	tokens[tokenName] = newToken
+	viper.Set("tokens", tokens)
+
+	// Se não houver token ativo definido, define este token como ativo
+	if viper.GetString("active_token") == "" {
+		viper.Set("active_token", tokenName)
+	}
+
+	// Salva as configurações no arquivo
 	if err := viper.WriteConfig(); err != nil {
 		if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
 			err = viper.WriteConfigAs(configFilePath)
 			if err != nil {
-				fmt.Println("Error creating new config file:", err)
+				fmt.Println("Erro ao criar novo arquivo de configuração:", err)
 				return
 			}
 		} else {
-			fmt.Println("Error saving token to file:", err)
+			fmt.Println("Erro ao salvar token no arquivo:", err)
 			return
 		}
 	}
 
-	fmt.Println("New token saved successfully!")
+	fmt.Println("Token salvo com sucesso!")
 }

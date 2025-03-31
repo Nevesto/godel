@@ -8,14 +8,20 @@ import (
 )
 
 func Connect() (*discordgo.Session, error) {
-	token := viper.GetString("discord_token")
-	if token == "" {
-		return nil, fmt.Errorf("discord token not set please run 'godel set-token [token]' to set it")
+	activeTokenName := viper.GetString("active_token")
+	if activeTokenName == "" {
+		return nil, fmt.Errorf("token ativo não definido. Por favor, execute 'godel token-switch [nome]' para definir o token a ser usado")
+	}
+
+	tokens := viper.GetStringMapString("tokens")
+	token, exists := tokens[activeTokenName]
+	if !exists || token == "" {
+		return nil, fmt.Errorf("token para a conta ativa '%s' não encontrado. Por favor, execute 'godel set-token [nome] [token]' para registrar o token", activeTokenName)
 	}
 
 	dg, err := discordgo.New(token)
 	if err != nil {
-		return nil, fmt.Errorf("error creating discord session: %v", err)
+		return nil, fmt.Errorf("erro ao criar sessão do Discord: %v", err)
 	}
 
 	dg.Identify.Intents = discordgo.IntentsAll
@@ -27,16 +33,11 @@ func Connect() (*discordgo.Session, error) {
 	dg.Identify.Compress = false
 	dg.Identify.LargeThreshold = 0
 
-	// This makes the account to apear offline, uncomment to enable (optional)
-	// dg.Identify.Presence = discordgo.GatewayStatusUpdate{
-	// 	Status: "invisible",
-	// }
-
 	err = dg.Open()
 	if err != nil {
-		return nil, fmt.Errorf("error opening connection to discord: %v", err)
+		return nil, fmt.Errorf("erro ao conectar ao Discord: %v", err)
 	}
 
-	fmt.Println("Connected to: " + dg.State.User.Username)
+	fmt.Println("Conectado como: " + dg.State.User.Username)
 	return dg, nil
 }
