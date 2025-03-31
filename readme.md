@@ -20,7 +20,7 @@ This project is under active development. For any bugs suport or bugs contact op
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/godel.git
+git clone https://github.com/Nevesto/godel.git
 
 # Navigate to the project directory
 cd godel
