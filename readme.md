@@ -8,6 +8,7 @@ Godel is a command line tool to easily clear Discord accounts.
 
 This project is under active development. For any bugs suport or bugs contact open a new issue.
 
+
 ## Features
 
 - Clean Discord account messages and data
@@ -60,6 +61,10 @@ godel --help
 3. Commit your changes (`git commit -m 'Add a feature'`)
 4. Push to the branch (`git push origin feature/your-feature`)
 5. Open a Pull Request
+
+## Disclaimer
+
+Discord does not allow account automation. This tool is developed for educational purposes. Use at your own risk.
 
 ## License
 
