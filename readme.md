@@ -33,11 +33,15 @@ Godel includes several safety mechanisms to reduce the risk of account bans:
 - **Batch Processing**: Processes messages in configurable batches with delays
 - **Security Profiles**: Three pre-configured profiles for different risk tolerances
 
+For detailed information, see [SECURITY_GUIDE.md](SECURITY_GUIDE.md).
+
 ### Security Profiles
 
 - **Conservative** (recommended): Slowest but safest, 1 request every 4 seconds
 - **Default**: Balanced approach, 1 request every 2 seconds
 - **Aggressive**: Faster but higher risk, 1 request per second
+
+For custom configurations, see [CUSTOM_CONFIG.md](CUSTOM_CONFIG.md).
 
 ## Installation
 
