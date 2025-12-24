@@ -7,6 +7,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	securityProfile string
+)
+
 var rootCmd = &cobra.Command{
 	Use:   "godel",
 	Short: "A cli to clear dms on discord",
@@ -14,6 +18,10 @@ var rootCmd = &cobra.Command{
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		auth.LoadConfig()
 	},
+}
+
+func init() {
+	rootCmd.PersistentFlags().StringVarP(&securityProfile, "security", "s", "default", "Security profile: default, conservative, or aggressive")
 }
 
 func Execute() {
